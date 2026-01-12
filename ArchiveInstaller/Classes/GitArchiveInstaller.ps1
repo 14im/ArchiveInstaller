@@ -1,0 +1,1 @@
+class GitArchiveInstaller : ArchiveInstaller { GitArchiveInstaller() { $this.GithubRepositoryOwner = 'git-for-windows'; $this.GithubRepositoryName = 'git'; $this.ArchiveGlob = '*-64-bit.zip' } }

@@ -1,0 +1,1 @@
+class PowershellVSCodeExtensionArchiveInstaller : ArchiveInstaller { PowershellVSCodeExtensionArchiveInstaller() { $this.GithubRepositoryOwner = 'PowerShell'; $this.GithubRepositoryName = 'vscode-powershell'; $this.ArchiveGlob = 'powershell-*.vsix' } }

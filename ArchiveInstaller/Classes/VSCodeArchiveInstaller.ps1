@@ -1,0 +1,1 @@
+class VSCodeArchiveInstaller : ArchiveInstaller { VSCodeArchiveInstaller() { $this.DownloadUrl = 'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-archive'; $this.ArchiveGlob = 'VSCode-win32-x64-*.zip' } }

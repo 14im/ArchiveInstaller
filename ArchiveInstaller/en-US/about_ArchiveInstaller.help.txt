@@ -1,0 +1,24 @@
+TOPIC
+    about_ArchiveInstaller
+
+SHORT DESCRIPTION
+    Module pour telecharger et installer des archives avec FastDownload (HttpClient/BITS), verification de checksum, Force, Verbose et WhatIf.
+
+LONG DESCRIPTION
+    - Telechargement (Get-*) avec options:
+        * -Force : ecrase le fichier existant
+        * -FastDownload : utilise HttpClient streaming (cross-platform) ou Start-BitsTransfer (Windows)
+        * -VerifyChecksum : verifie le hash SHA256 via fichier checksum GitHub ou parametre -ChecksumFile
+        * -Strict : echoue si checksum introuvable
+    - Extraction/Installation (Expand-*, Install-*) avec:
+        * -Force, -WhatIf, -Confirm
+    - Ajout au PATH via Add-Path
+
+EXAMPLES
+    PS> Get-VSCodeArchive -FastDownload -VerifyChecksum -Verbose
+    PS> Get-PowerShellArchive -FastDownload -VerifyChecksum -Strict -Verbose
+    PS> Expand-PowerShellArchive -AddPath -Verbose -WhatIf
+
+NOTES
+    Auteur: TOUAHRIA Karim
+    Version: 1.1.1

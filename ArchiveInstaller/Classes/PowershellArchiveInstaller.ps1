@@ -1,0 +1,1 @@
+class PowershellArchiveInstaller : ArchiveInstaller { PowershellArchiveInstaller() { $this.GithubRepositoryOwner = 'PowerShell'; $this.GithubRepositoryName = 'PowerShell'; $this.ArchiveGlob = 'PowerShell-*-x64.zip' } }

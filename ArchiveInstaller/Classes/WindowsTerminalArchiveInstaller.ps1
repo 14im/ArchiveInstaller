@@ -1,0 +1,5 @@
+class WindowsTerminalArchiveInstaller : ArchiveInstaller {
+    WindowsTerminalArchiveInstaller() { $this.GithubRepositoryOwner = 'microsoft'; $this.GithubRepositoryName = 'terminal'; $this.ArchiveGlob = 'Microsoft.WindowsTerminal_*x64.zip' }
+    [string] ExtractLastLocalArchive () { $Destination = Join-Path -Path (Join-Path -Path $([environment]::GetFolderPath('LocalApplicationData')) -ChildPath 'Programs') -ChildPath 'Microsoft'; return $this.ExtractLastLocalArchive($Destination) }
+    [string] ExtractLastLocalArchive ($Destination) { $DestinationPath = ([ArchiveInstaller] $this).ExtractLastLocalArchive($Destination); $SubDirectories = Get-ChildItem -Directory $DestinationPath; if ($SubDirectories) { $SubDirectory = $SubDirectories | Select-Object -First 1; Move-Item "$($SubDirectory.FullName)\*" -Destination $DestinationPath; Remove-Item -Recurse -Force $SubDirectory.FullName }; return $DestinationPath }
+}
