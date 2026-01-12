@@ -97,11 +97,13 @@ Describe "Test-Checksum" -Tag 'Unit', 'Private' {
         }
 
         It "Should validate FilePath parameter is mandatory" {
-            { Test-Checksum -ExpectedHash $script:ExpectedHash } | Should -Throw
+            $params = (Get-Command Test-Checksum).Parameters
+            $params['FilePath'].Attributes.Mandatory | Should -Be $true
         }
 
         It "Should validate ExpectedHash parameter is mandatory" {
-            { Test-Checksum -FilePath $script:TestFile } | Should -Throw
+            $params = (Get-Command Test-Checksum).Parameters
+            $params['ExpectedHash'].Attributes.Mandatory | Should -Be $true
         }
 
         It "Should handle empty file" {
@@ -129,7 +131,7 @@ Describe "Test-Checksum" -Tag 'Unit', 'Private' {
 
         It "Should call Get-FileHash with correct file path" {
             Mock Get-FileHash {
-                $Path | Should -Be $script:TestFile
+                $LiteralPath | Should -Be $script:TestFile
                 return @{ Hash = $script:ExpectedHash }
             }
 
@@ -179,9 +181,9 @@ Describe "Test-Checksum" -Tag 'Unit', 'Private' {
     Context "Edge Cases" {
         It "Should handle file with special characters in name" {
             $specialFile = Join-Path $TestDrive "test[file]#with-special.txt"
-            "Content" | Out-File -FilePath $specialFile -NoNewline
+            "Content" | Out-File -LiteralPath $specialFile -NoNewline
 
-            $specialHash = (Get-FileHash -Path $specialFile -Algorithm SHA256).Hash
+            $specialHash = (Get-FileHash -LiteralPath $specialFile -Algorithm SHA256).Hash
 
             $result = Test-Checksum -FilePath $specialFile -ExpectedHash $specialHash
             $result | Should -Be $true

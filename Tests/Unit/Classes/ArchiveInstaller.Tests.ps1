@@ -120,13 +120,11 @@ Describe "ArchiveInstaller Class" -Tag 'Unit', 'Classes' {
 
         It "Should write verbose messages" {
             Mock Invoke-RestMethod { return Get-MockGitHubRelease }
+            Mock Write-Verbose { } -Verifiable -ParameterFilter { $Message -match "Querying GitHub" }
 
-            $VerbosePreference = 'Continue'
-            $verboseOutput = $script:installer.GetGitHubDownloadUrl() 4>&1
-            $VerbosePreference = 'SilentlyContinue'
+            $script:installer.GetGitHubDownloadUrl()
 
-            $verboseText = $verboseOutput -join " "
-            $verboseText | Should -Match "Querying GitHub"
+            Should -InvokeVerifiable
         }
 
         It "Should use correct GitHub API endpoint" {
@@ -296,10 +294,18 @@ Describe "ArchiveInstaller Class" -Tag 'Unit', 'Classes' {
             $script:installer.GithubRepositoryOwner = "test"
             $script:installer.GithubRepositoryName = "repo"
 
+            # First resolve the GitHub URL explicitly
             Mock Invoke-RestMethod { return Get-MockGitHubRelease }
+            $script:installer.DownloadUrl = $script:installer.GetGitHubDownloadUrl()
+
+            # Verify URL was resolved
+            $script:installer.DownloadUrl | Should -Not -BeNullOrEmpty
+            $script:installer.DownloadUrl | Should -Match "PowerShell.*\.zip$"
+
+            # Now test that Download works with the resolved URL
             Mock Invoke-WebRequest -ParameterFilter { $Method -eq 'HEAD' } {
                 return @{
-                    Headers = @{}
+                    Headers = @{ 'Content-Disposition' = 'filename="test.zip"' }
                     BaseResponse = @{ ResponseUri = @{ AbsolutePath = "/test.zip" } }
                 }
             }
@@ -307,9 +313,10 @@ Describe "ArchiveInstaller Class" -Tag 'Unit', 'Classes' {
                 "content" | Out-File (Join-Path $TestDrive "test.zip")
             }
 
-            $script:installer.Download()
+            $result = $script:installer.Download()
 
-            $script:installer.DownloadUrl | Should -Not -BeNullOrEmpty
+            $result | Should -Match "test.zip"
+            Test-Path $result | Should -Be $true
         }
 
         It "Should write verbose messages" {
@@ -322,13 +329,11 @@ Describe "ArchiveInstaller Class" -Tag 'Unit', 'Classes' {
             Mock Invoke-WebRequest -ParameterFilter { $Method -ne 'HEAD' } {
                 "content" | Out-File (Join-Path $TestDrive "test.zip")
             }
+            Mock Write-Verbose { } -Verifiable -ParameterFilter { $Message -match "Download" }
 
-            $VerbosePreference = 'Continue'
-            $verboseOutput = $script:installer.Download() 4>&1
-            $VerbosePreference = 'SilentlyContinue'
+            $script:installer.Download()
 
-            $verboseText = $verboseOutput -join " "
-            $verboseText | Should -Match "Download"
+            Should -InvokeVerifiable
         }
     }
 
@@ -447,6 +452,9 @@ Describe "ArchiveInstaller Class" -Tag 'Unit', 'Classes' {
         }
 
         It "Should sort by name and return last" {
+            # Clean up any existing files that might interfere
+            Get-ChildItem -Path $TestDrive -Filter "*-x64.zip" | Remove-Item -Force
+
             $files = @("app-v1.0-x64.zip", "app-v2.0-x64.zip", "app-v1.5-x64.zip")
             foreach ($file in $files) {
                 "content" | Out-File (Join-Path $TestDrive $file)

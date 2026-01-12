@@ -3,7 +3,7 @@ function Test-Checksum {
         [Parameter(Mandatory)][string]$FilePath,
         [Parameter(Mandatory)][string]$ExpectedHash
     )
-    $actualHash = (Get-FileHash -Path $FilePath -Algorithm SHA256).Hash.ToLower()
+    $actualHash = (Get-FileHash -LiteralPath $FilePath -Algorithm SHA256).Hash.ToLower()
     if ($actualHash -eq $ExpectedHash.ToLower()) {
         Write-Verbose "Checksum OK: $actualHash"
         return $true

@@ -353,16 +353,19 @@ Describe "Get-GitHubAssetChecksum" -Tag 'Unit', 'Private' {
     }
 
     Context "Parameter Validation" {
-        It "Should require Owner parameter" {
-            { Get-GitHubAssetChecksum -Repo "repo" -ArchiveName "file.zip" } | Should -Throw
+        It "Should validate Owner parameter is mandatory" {
+            $params = (Get-Command Get-GitHubAssetChecksum).Parameters
+            $params['Owner'].Attributes.Mandatory | Should -Be $true
         }
 
-        It "Should require Repo parameter" {
-            { Get-GitHubAssetChecksum -Owner "owner" -ArchiveName "file.zip" } | Should -Throw
+        It "Should validate Repo parameter is mandatory" {
+            $params = (Get-Command Get-GitHubAssetChecksum).Parameters
+            $params['Repo'].Attributes.Mandatory | Should -Be $true
         }
 
-        It "Should require ArchiveName parameter" {
-            { Get-GitHubAssetChecksum -Owner "owner" -Repo "repo" } | Should -Throw
+        It "Should validate ArchiveName parameter is mandatory" {
+            $params = (Get-Command Get-GitHubAssetChecksum).Parameters
+            $params['ArchiveName'].Attributes.Mandatory | Should -Be $true
         }
 
         It "Should accept all required parameters" {

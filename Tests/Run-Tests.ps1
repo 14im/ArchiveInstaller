@@ -50,6 +50,9 @@ $config = New-PesterConfiguration
 # Set verbosity
 $config.Output.Verbosity = 'Detailed'
 
+# Enable PassThru to get result object
+$config.Run.PassThru = $true
+
 # Set test path based on type
 $config.Run.Path = "$PSScriptRoot"
 switch ($TestType) {
@@ -96,6 +99,20 @@ if ($OutputFormat -ne 'None') {
     Write-Host "Test results will be saved to: $OutputFile" -ForegroundColor Yellow
 }
 
+# Check if test files exist
+$testPath = $config.Run.Path.Value
+$testFiles = Get-ChildItem -Path $testPath -Filter "*.Tests.ps1" -Recurse -ErrorAction SilentlyContinue
+if (-not $testFiles) {
+    Write-Warning "No test files found in: $testPath"
+    Write-Host "`nTest Summary:" -ForegroundColor Cyan
+    Write-Host "  Total:    0" -ForegroundColor Yellow
+    Write-Host "  Passed:   0" -ForegroundColor Yellow
+    Write-Host "  Failed:   0" -ForegroundColor Yellow
+    Write-Host "  Skipped:  0" -ForegroundColor Yellow
+    Write-Host "`nNo tests to run" -ForegroundColor Yellow
+    exit 0
+}
+
 # Run tests
 Write-Host "`nStarting test execution..." -ForegroundColor Green
 Write-Host "=" * 80 -ForegroundColor Green
@@ -105,11 +122,19 @@ $result = Invoke-Pester -Configuration $config
 # Output summary
 Write-Host "`n" + ("=" * 80) -ForegroundColor Green
 Write-Host "Test Summary:" -ForegroundColor Cyan
-Write-Host "  Total:   $($result.TotalCount)" -ForegroundColor White
-Write-Host "  Passed:  $($result.PassedCount)" -ForegroundColor Green
-Write-Host "  Failed:  $($result.FailedCount)" -ForegroundColor $(if ($result.FailedCount -gt 0) { 'Red' } else { 'Green' })
-Write-Host "  Skipped: $($result.SkippedCount)" -ForegroundColor Yellow
-Write-Host "  Duration: $($result.Duration)" -ForegroundColor White
+
+# Get test counts from Pester result object
+$totalCount = $result.TotalCount
+$passedCount = $result.PassedCount
+$failedCount = $result.FailedCount
+$skippedCount = $result.SkippedCount
+$duration = $result.Duration
+
+Write-Host "  Total:    $totalCount" -ForegroundColor White
+Write-Host "  Passed:   $passedCount" -ForegroundColor Green
+Write-Host "  Failed:   $failedCount" -ForegroundColor $(if ($failedCount -gt 0) { 'Red' } else { 'Green' })
+Write-Host "  Skipped:  $skippedCount" -ForegroundColor Yellow
+Write-Host "  Duration: $duration" -ForegroundColor White
 
 if ($CodeCoverage -and $result.CodeCoverage) {
     $coveragePercent = [math]::Round(($result.CodeCoverage.CoveragePercent), 2)
@@ -117,7 +142,7 @@ if ($CodeCoverage -and $result.CodeCoverage) {
 }
 
 # Exit with appropriate code
-if ($result.FailedCount -gt 0) {
+if ($failedCount -gt 0) {
     Write-Host "`nTests FAILED" -ForegroundColor Red
     exit 1
 } else {

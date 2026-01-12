@@ -14,10 +14,15 @@ function Get-GitHubAssetChecksum {
     $checksumAsset = $release.assets | Where-Object { $_.name -match 'sha256' -or $_.name -match 'checksum' -or $_.name -match 'sha256sum' } | Select-Object -First 1
     if (-not $checksumAsset) { return $null }
     $tmp = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath $checksumAsset.name
-    Invoke-WebRequest -Headers $headers -Uri $checksumAsset.browser_download_url -OutFile $tmp -UseBasicParsing
+    try {
+        Invoke-WebRequest -Headers $headers -Uri $checksumAsset.browser_download_url -OutFile $tmp -UseBasicParsing
+    } catch {
+        Write-Verbose "Failed to download checksum file: $($_.Exception.Message)"
+        return $null
+    }
     $lines = Get-Content -LiteralPath $tmp
     foreach($line in $lines){
-        if ($line -match [Regex]::Escape($ArchiveName)){
+        if ($line -cmatch [Regex]::Escape($ArchiveName)){
             $tokens = $line -split '\s+'
             if ($tokens.Count -ge 1){
                 $hash = $tokens[0]
