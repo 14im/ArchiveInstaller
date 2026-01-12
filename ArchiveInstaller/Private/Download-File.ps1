@@ -6,10 +6,24 @@ function Download-File {
     )
     $ProgressPreference = 'SilentlyContinue'
     $headers = @{ 'User-Agent' = 'ArchiveInstaller' }
-    $isWindows = $false
-    try { if ($PSVersionTable.PSEdition -eq 'Desktop' -or $IsWindows) { $isWindows = $true } } catch { $isWindows = $true }
 
-    if ($FastDownload -and $isWindows -and (Get-Command Start-BitsTransfer -ErrorAction Ignore)) {
+    # Detect Windows platform (compatible with PowerShell 5.1 and 7+)
+    $isWindowsOS = $false
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        # PowerShell 5.1 (Desktop edition) is Windows-only
+        $isWindowsOS = $true
+    } elseif ($PSVersionTable.Platform -eq 'Win32NT') {
+        # PowerShell 7+ on Windows
+        $isWindowsOS = $true
+    } elseif (-not (Test-Path Variable:\IsWindows)) {
+        # Variable doesn't exist, assume Windows (older PS versions)
+        $isWindowsOS = $true
+    } elseif ($IsWindows) {
+        # PowerShell 7+ automatic variable
+        $isWindowsOS = $true
+    }
+
+    if ($FastDownload -and $isWindowsOS -and (Get-Command Start-BitsTransfer -ErrorAction Ignore)) {
         try {
             Write-Verbose "Using BITS"
             Start-BitsTransfer -Source $Url -Destination $OutFile -Resume -ErrorAction Stop

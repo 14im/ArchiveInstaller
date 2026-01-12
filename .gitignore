@@ -1,0 +1,51 @@
+# PowerShell Module .gitignore
+
+# Test Results and Coverage
+TestResults.xml
+coverage.xml
+*.trx
+*.coverage
+
+# Pester Output
+Tests/TestResults/
+Tests/Coverage/
+
+# PowerShell Temporary Files
+*.ps1~
+*.psm1~
+*.psd1~
+
+# Build Artifacts
+bin/
+obj/
+*.nupkg
+*.zip.tmp
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Windows Thumbnail Cache
+Thumbs.db
+ehthumbs.db
+
+# Temporary Download Files
+Downloads/*.zip
+Downloads/*.tar.gz
+Downloads/*.exe
+Downloads/*.msi
+
+# Log Files
+*.log
+logs/
+
+# Local Configuration
+*.local.ps1
+appsettings.local.json
+
+# PowerShell Gallery Publish
+publish/
